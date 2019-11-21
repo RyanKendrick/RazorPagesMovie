@@ -13,49 +13,56 @@ using Microsoft.EntityFrameworkCore;
 
 namespace RazorPagesMovie
 {
-    public class Startup
-    {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+  public class Startup
+{
+  public Startup(IConfiguration configuration, IWebHostEnvironment env)
+  {
+      Environment = env;
+      Configuration = configuration;
+  }
 
-        public IConfiguration Configuration { get; }
+  public IConfiguration Configuration { get; }
+  public IWebHostEnvironment Environment { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddRazorPages();
-            // Register the database context with the dependency injection container
-            services.AddDbContext<RazorPagesMovieContext>(options =>
-                options.UseSqlite(Configuration.GetConnectionString("MovieContext")));
-        }
+  public void ConfigureServices(IServiceCollection services)
+  {
+      if (Environment.IsDevelopment())
+      {
+          services.AddDbContext<MovieContext>(options =>
+          options.UseSqlite(
+              Configuration.GetConnectionString("MovieContext")));
+      }
+      else
+      {
+          services.AddDbContext<MovieContext>(options =>
+          options.UseSqlServer(
+              Configuration.GetConnectionString("MovieContext")));
+      }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+      services.AddRazorPages();
+  }
 
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
+  public void Configure(IApplicationBuilder app)
+  {
+      if (Environment.IsDevelopment())
+      {
+          app.UseDeveloperExceptionPage();
+          app.UseDatabaseErrorPage();
+      }
+      else
+      {
+          app.UseExceptionHandler("/Error");
+          app.UseHsts();
+      }
 
-            app.UseRouting();
+      app.UseHttpsRedirection();
+      app.UseStaticFiles();
 
-            app.UseAuthorization();
+      app.UseRouting();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapRazorPages();
-            });
-        }
-    }
+      app.UseEndpoints(endpoints =>
+      {
+          endpoints.MapRazorPages();
+      });
+  }
 }
